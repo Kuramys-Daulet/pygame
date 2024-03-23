@@ -52,6 +52,11 @@ lose_label = label.render('Сіз жеңілдіңіз!', True, (193, 196, 199))
 restart_label = label.render('Қайтадан ойнау', True, (115, 132, 148))
 restart_label_rect = restart_label.get_rect(topleft=(140, 220))
 
+
+builtins_left = 5
+bullet = pygame.image.load('images/bullet.png').convert_alpha()
+bullets = []
+
 gameplay = True
 
 
@@ -112,17 +117,37 @@ while running:
         bg_x -= 2
         if bg_x == -612:
             bg_x = 0
+
+
+
+        if bullets:
+            for (i, el) in enumerate(bullets):
+                screen.blit(bullet, (el.x, el.y))
+                el.x += 4
+
+                if el.x > 630:
+                    bullets.pop(i)
+
+                if ghost_list_in_game:
+                    for (index, ghost_el) in enumerate(ghost_list_in_game):
+                        if el.colliderect(ghost_el):
+                            ghost_list_in_game.pop(index)
+                            bullets.pop(i)
+
     else:
         bg_sound.stop()
         screen.fill((87, 88, 89))
         screen.blit(lose_label, (150, 120))
         screen.blit(restart_label, restart_label_rect)
 
+
         mouse = pygame.mouse.get_pos()
         if restart_label_rect.collidepoint(mouse) and pygame.mouse.get_pressed()[0]:
             gameplay = True
             player_x = 150
             ghost_list_in_game.clear()
+            bullets.clear()
+            builtins_left = 5
 
 
     pygame.display.update()
@@ -134,5 +159,8 @@ while running:
             pygame.quit()
         if event.type == ghost_timer:
             ghost_list_in_game.append(ghost.get_rect(topleft=(614, 250)))
+        if gameplay and event.type == pygame.KEYUP and event.key == pygame.K_b and builtins_left > 0:
+            bullets.append(bullet.get_rect(topleft=(player_x + 30, player_y + 10)))
+            builtins_left -= 1
 
     clock.tick(10)
